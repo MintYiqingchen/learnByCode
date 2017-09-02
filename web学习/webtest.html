@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <title> 小白编程 </title>
+	<style>
+	  * { font-family : "Microsoft YaHei" }
+	</style>
+  </head>
+  <body>
+  <h1> 这里一开始什么都没有 </h1>
+    <form id="test-register" action="#" onsubmit="return checkRegisterForm()">
+    <p id="test-error" style="color:red"></p>
+    <p>
+        用户名: <input type="text" id="username" name="username">
+    </p>
+    <p>
+        口令: <input type="password" id="password" name="password">
+    </p>
+    <p>
+        重复口令: <input type="password" id="password-2">
+    </p>
+    <p>
+        <button type="submit">提交</button> <button type="reset">重置</button>
+    </p>
+	<input type="file" id='file-input'>
+	<div id="test-image-file" style="border:solid black 1px; height:150px; margin:2px;">
+	  <p id="test-file-info"></p>
+	</div>
+	<div id='test-promise'>
+	  <h2>点击下面的按钮，获取两个股票行情</h2>
+	  <button type="button" onclick="trickGetPrice()"> 真的吗？</button>
+	</div>
+	<script src="jstest.js"></script>
+	
+	<div id="cavans-window">
+	  <canvas id="test-canvas" width="400px" height="500px">
+	    <p>你的浏览器不支持画布</p>
+	  </canvas>
+	  <button type="button" onclick="paint"> 点我画图 </button>
+	</div>
+	<script src="jstest2.js"></script>
+</form>
+  </body>
+</html>
