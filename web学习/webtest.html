@@ -1,8 +1,18 @@
-<html>
+<!DOCTYPE html>
+<html lang="zh">
   <head>
+    <meta charset="UTF-8">
+	<meta name = "author" content="mintyi">
     <title> 小白编程 </title>
 	<style>
-	  * { font-family : "Microsoft YaHei" }
+	  * { 
+		font-family : "Microsoft YaHei";
+		color : #FFF;
+		margin: 10px;
+	  }
+	  body {
+		background-image: url('background.jpg');
+	  }
 	</style>
   </head>
   <body>
@@ -31,11 +41,11 @@
 	</div>
 	<script src="jstest.js"></script>
 	
-	<div id="cavans-window">
-	  <canvas id="test-canvas" width="400px" height="500px">
+	<div id="cavans-window" >
+	  <canvas id="test-canvas" height="500px" style="display:block; margin:0 auto;">
 	    <p>你的浏览器不支持画布</p>
 	  </canvas>
-	  <button type="button" onclick="paint"> 点我画图 </button>
+	  <button type="button" onclick="paint()"> 点我画图 </button>
 	</div>
 	<script src="jstest2.js"></script>
 </form>

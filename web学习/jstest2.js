@@ -1,12 +1,27 @@
 "use strict";
 
+
 function paint() {
-	// 加载最近30个交易日的K线图数据:
-	var js = document.createElement('script');
-	js.src = 'http://img1.money.126.net/data/hs/kline/day/history/2015/0000001.json?callback=loadStockData&t=' + Date.now();
-	document.getElementsByTagName('head')[0].appendChild(js);
+	var canvas = document.getElementById('test-canvas');
+	var context = canvas.getContext('2d');
+	
+	context.beginPath();
+	context.moveTo(100,100);
+	context.arcTo(200,100,400,300,200);
+	context.strokeStyle = 'black';
+	context.width = 6;
+	context.lineCap = 'round';
+	context.stroke();
 }
 
+window.onload = function (){
+	var canvas = document.getElementById('test-canvas');
+	canvas.width = screen.availWidth;
+	var context = canvas.getContext('2d');
+	context.fillStyle = 'white';
+	context.fillRect(0,0,canvas.width, canvas.height);
+	
+}
 window.loadStockData = function (r) {
     var
         NUMS = 30,
@@ -30,6 +45,12 @@ window.loadStockData = function (r) {
 
 window.drawStock = function (data) {
 	var canvas = getElementById('test-canvas'), width=canvas.width, height=canvas.height;
+    	
 	
+}
+
+function drawChatBox(context,x0,y0,x1,y1, extend){
+	context.beginPath();
+	context.moveTo(x0,y0);
 	
 }
