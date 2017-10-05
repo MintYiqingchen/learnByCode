@@ -3,12 +3,18 @@
 # @Date    : 2017-09-29 22:01:20
 # @Author  : mintyi
 # @Version : 1.0
+'''
+pytorch 通用流程
 
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# @Date    : 2017-09-29 22:01:20
-# @Author  : mintyi
-# @Version : 1.0
+unsqueeze 将一维变量转化为pytorch能够处理的二维以上变量
+
+loss = nn.某种loss(预测值, 实际值) 回归里边就这么写，注意两个值不要弄反顺序
+optimizer = nn.某种优化策略(model.parameters(),...)
+optimizer.zero_grad() 先清除梯度缓存
+loss.backward() 再反向传播求梯度
+optimizer.step() 最后更新参数
+
+'''
 
 import torchvision
 import torchvision.transforms as transforms
