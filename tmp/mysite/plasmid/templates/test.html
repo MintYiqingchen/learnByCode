@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {% load staticfiles %}
+    <script type="text/javascript" src='{% static "angular.min.js"%}'></script>
+    <script src='{% static "angularplasmid.min.js"%}'></script>
+    <style type="text/css">
+      .labelline {stroke:#333;stroke-dasharray:2,2;stroke-width:2px;}
+    </style>
+  </head>
+  <body>
+    <!-- 这里是 angularplasmid 的用法
+    <plasmid id="p1" sequencelength='1000'>
+      <plasmidtrack id="t1">
+        <trackscale class='sminor' interval="10"></trackscale>
+        <trackscale class="smajor" interval='50' showlabels='1' labelclass='sml'></trackscale>
+        <trackscale class='smajorin' interval='50' direction='in'></trackscale>
+        <trackmarker class="marker" start='50' end='250'>
+          <markerlabel class='mlabel' text='SAMPLE' type='path'></markerlabel>
+          <markerlabel class='mlabel' text='Inner' vadjust='-40'></markerlabel>
+          <markerlabel class='mlabel' text='OUTER' type='path' vadjust='55'></markerlabel>
+        </trackmarker>
+      </plasmidtrack>
+    </plasmid>
+
+    <plasmid sequencelength='1000'>
+      <plasmidtrack radius='75' style='fill:#f0f0f0;stroke:#ccc'>
+        <trackmarker ng-repeat='n in [50,400]' start="{[n]}" end="{[n+50]}"></trackmarker>
+      </plasmidtrack>
+    </plasmid>-->
+    <div ng-app="myApp" ng-controller="PlasmidCtrl">
+      <plasmidapi name="api"></plasmidapi>
+      <plasmid id="pdemo" sequencelength="{[currentPlasmid.length]}" plasmidheight="420" plasmidwidth="500">
+        <plasmidtrack trackstyle="fill:rgba(225,225,225,0.5)" radius="120">
+          <tracklabel text="{[currentPlasmid.name]}" labelstyle='font-size:20px;font-weight:400'></tracklabel>
+          <tracklabel text="{[api.plasmid('pdemo').sequencelength]} bp" labelstyle='font-size:10px' vadjust="20"></tracklabel>
+          
+          <!-- draw the plasmid bone markers and labels -->
+          <trackmarker ng-repeat="m in currentPlasmid.marker" start="{[m.start]}" end="{[m.end]}" arrowendlength="4" arrowstartlength="-4" markerstyle="{[m.markerStyleIn]}">
+            <markerlabel type="path" class="mdlabel" text="{[m.name]}" vadjust='{[m.vadjust]}' valign="{[m.valign]}" showline="1" linevadjust="-5" lineclass="labelline" style='font-size:17px'></markerlabel>
+          </trackmarker>
+          
+          <!-- draw the marker regions -->
+          <trackmarker ng-repeat="m in currentPlasmid.marker" start="{[m.start]}" end="{[m.end]}" markerstyle="{[m.markerStyleOut]}" wadjust="-5" vadjust="25"></trackmarker>
+          <trackscale interval="100" style='stroke:#999' ticksize="3"></trackscale>
+        </plasmidtrack>
+        
+        <plasmidtrack trackstyle="fill:rgba(225,225,225,0.5)" radius="110" width="10">
+          <trackmarker ng-repeat="m in partList" start="{[m.start]}" end="{[m.end]}" markerstyle="{[m.getStyleIn()]}" sequence="{[m.sequence]}" ng-mouseover="showSequence(m)" ng-mouseleave="hideSequence()">
+            <markerlabel class="mdlabel" text="{[m.name]}" type="path" style='font-size:13px'></markerlabel>
+            <trackmarker ng-repeat="m in partList" start="{[m.start]}" end="{[m.end]}" markerstyle="{[m.getMarkerStyleOut()]}" wadjust="-5" vadjust="-5"></trackmarker>
+          </trackmarker>
+          <trackscale interval="200" style="stroke:#f00" direction="in" showlabels="1" labelstyle="fill:#999;stroke:none;text-anchor:middle;alignment-baseline:middle;font-size:10px"></trackscale>
+        </plasmidtrack>
+      </plasmid>
+      <div class="p" ng-hide="myHide" ng-model="myValue">
+        {[myValue]}
+      </div>
+      <div class="myDropdown">
+        <h3 class='title inline'>Choose a plasmid: </h3>
+        <select class="ui dropdown" ng-model="curPlaIndex" ng-options="plasmids.indexOf(a) as a.name for a in plasmids">
+          <option value="">Choose a plasmid</option>
+        </select>
+      </div>
+
+      <div class="partInfo">
+        <h3 class='title inline'>Choose a part type </h3>
+          <select class="ui dropdown" style="display:block;" ng-model="curPartType" ng-options="x for x in partType" ng-init='curPartType=partType[0]'>
+          </select>
+          元件名字：<input type="text" ng-model="curPartName"><br>
+          元件起始点：<input type="text" ng-model="currentPartBegin"><br>
+          元件终点：<input type="text" ng-model="curPartEnd"><br>
+          <button ng-click="addNewPart()">ADD</button>
+          <button ng-click="goBack()">BACK</button>
+          <button ng-click="clearAllPart()">RESET</button>
+      </div>
+    
+    </div>
+
+
+    <script type="text/javascript">
+      'use strict'
+      function Part(name, type, start, end, sequence) {
+        this.name=name;
+        this.type=type;
+        this.start=start;
+        this.end=end;
+        this.sequence = sequence;
+      }
+      Part.prototype.getStyleIn = function(){
+        if (this.type == 'promoter') {
+          return "fill:rgba(170,0,85,0.9)";
+        }
+        if (this.type == 'RBS') {
+          return "fill:rgba(237,184,78,0.9)";
+        }
+        if (this.type == 'gene') {
+          return 'fill:rgba(155,131,193,0.9)';
+        }
+        if (this.type == 'terminator') {
+          return "fill:rgba(255,221,238,0.6)";
+        }
+      }
+      Part.prototype.getMarkerStyleOut = function() {
+        if (this.type == 'promoter') {
+          return "fill:blue";
+        }
+        if (this.type == 'RBS') {
+          return "fill:rgba(238,255,221,0.6)";
+        }
+        if (this.type == 'gene') {
+          return 'fill:rgba(238,255,221,0.6)';
+        }
+        if (this.type == 'terminator') {
+          return "fill:rgba(238,255,221,0.6)";
+        }
+      }
+      Part.prototype.getVadjust = function() {
+        if (this.type == 'promoter') {
+          return "65";
+        }
+        if (this.type == 'RBS') {
+          return "50";
+        }
+        if (this.type == 'gene') {
+          return '15';
+        }
+        if (this.type == 'terminator') {
+          return "65";
+        }
+      }
+
+      var app = angular.module('myApp',['angularplasmid']);
+
+      app.config(['$interpolateProvider', function($interpolateProvider) {
+        $interpolateProvider.startSymbol('{[');
+        $interpolateProvider.endSymbol(']}');
+      }]);
+
+      app.controller('PlasmidCtrl', function($scope, $http){
+
+        // 获得质粒数据
+        $http.get('/plasmid/data/').then(function(data){
+          console.log(data);
+          $scope.plasmids = data.data;
+        })
+        $scope.$watch('curPlaIndex', function(newValue,oldValue, scope) {
+          if (newValue !== undefined) {
+              $scope.currentPlasmid = $scope.plasmids[newValue];
+          }
+        });
+
+        $scope.partList = new Array();
+        $scope.partType = ["promoter","RBS","gene","terminator"];
+        // 事件处理函数
+        $scope.addNewPart = function(){
+          console.log($scope.currentPlasmid.length);
+          console.log($scope.currentPartBegin);
+          console.log($scope.curPartEnd);
+          if($scope.curPartName!==undefined &&Number($scope.currentPartBegin)<Number($scope.curPartEnd) && Number($scope.currentPartBegin)>=0 && Number($scope.curPartEnd)<=Number($scope.currentPlasmid.length))
+          {
+            /* 照查询接口自己加 
+            let sequence = $http.get('查询dna序列的api').data; */
+
+            $scope.partList.push(new Part($scope.curPartName, $scope.curPartType, $scope.currentPartBegin, $scope.curPartEnd, 'sequence'));
+          }else{
+            alert('part setting invalid!');
+          }
+        }
+        $scope.goBack = function(){
+          $scope.partList.pop();
+        }
+        $scope.clearAllPart = function(){
+          $scope.partList = new Array();
+        }
+
+        // 显示part 序列信息的部分
+        $scope.myHide=true;
+        $scope.myValue=null;
+        $scope.showSequence = function (part) {
+          $scope.myValue = part.sequence;
+          $scope.myHide = false;
+        };
+        $scope.hideSequence = function() {
+          $scope.myValue = null;
+          $scope.myHide = true;
+        }
+      });
+
+    </script>
+  </body>
+</html>
