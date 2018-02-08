@@ -43,12 +43,11 @@ def demo():
     plt.ion()       # something about plotting
     x = np.linspace(*X_BOUND, 200)
     plt.plot(x, object_F(x))
-
+    sca = None
     pop = np.random.randint(2,size=(POP_SIZE,DNA_SIZE))
     for _ in range(N_GENERATIONS):
         scores = get_fitness(translateDNA(pop))
-
-        if 'sca' in globals():
+        if sca:
             sca.remove()
         sca = plt.scatter(translateDNA(pop), scores, lw=0, c='red', alpha=0.5);
         plt.pause(0.05)
@@ -190,5 +189,5 @@ def trademan_demo():
         print(a)
 
 if __name__ == '__main__':
-    #demo()
-    trademan_demo()
+    demo()
+    #trademan_demo()
