@@ -1,0 +1,2 @@
+update haskell program
+write Hourglass
