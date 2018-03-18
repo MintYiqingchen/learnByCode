@@ -17,13 +17,24 @@ mergesort lst= let
     in merge (mergesort s1) (mergesort s2)
 
 -- binary Tree
-data BinTree a = Nil|Node{ value::a, left::BinTree a, right::BinTree a}
+class Tree t where -- here, a is a data, but not specific data
+    height::t a->Int
+    infixWalk::t a->[a]
+
+
+-- do not use record if there are alternative value constructor
+data BinTree a = Nil|Node a (BinTree a) (BinTree a)
         deriving(Show)
 
 -- accept type constructor rather than value constructor
 instance Functor BinTree where
     fmap func Nil = Nil
-    fmap func treeA = Node (func $ value treeA) (fmap func $ left treeA) (fmap func $ right treeA)
+    fmap func (Node value left right) = Node (func value) (fmap func left) (fmap func right)
+instance Tree BinTree where
+    height Nil = 0
+    height (Node value left right) = max (height left) (height right) + 1
+    infixWalk Nil = []
+    infixWalk (Node value left right) = (infixWalk left) ++ [value] ++ (infixWalk right)
 
 listToTree::(Ord a)=>[a]->BinTree a
 listToTree [] = Nil
@@ -34,31 +45,31 @@ listToTree (x:xs) = let
 
 insertToTree::(Ord a)=>a->BinTree a->BinTree a
 insertToTree val Nil = Node val Nil Nil
-insertToTree val tree = if val<=value tree
-    then Node (value tree) (insertToTree val $ left tree) (right tree)
-    else Node (value tree) (left tree) (insertToTree val $ right tree)
+insertToTree val (Node value left right) = if val<=value
+    then Node value (insertToTree val left) right
+    else Node value left (insertToTree val right)
 
 searchInTree::(Ord a)=>a->BinTree a->Bool
 searchInTree val Nil = False
-searchInTree val tree -- the way of if else if else
-    |val==value tree = True
-    |val < value tree = (searchInTree val $ left tree) 
-    |val > value tree = (searchInTree val $ right tree)
+searchInTree val (Node value left right)-- the way of if else if else
+    |val==value = True
+    |val < value = (searchInTree val left) 
+    |val > value = (searchInTree val right)
 
 deleteFromTree::(Ord a)=>a->BinTree a->(BinTree a, Bool)
 deleteFromTree val Nil = (Nil, False)
-deleteFromTree val tree 
-    |val==value tree= _handle tree
-    |val < value tree= let (new_tree, b)=deleteFromTree val $ left tree in 
-        (Node (value tree) new_tree (right tree), b)
-    |val > value tree= let (new_tree, b)=deleteFromTree val $ right tree in 
-        (Node (value tree) (left tree) new_tree, b)
+deleteFromTree val tree@(Node value left right)
+    |val == value = _handle tree
+    |val < value = let (new_tree, b)=deleteFromTree val left in 
+        (Node value new_tree right, b)
+    |val > value = let (new_tree, b)=deleteFromTree val right in 
+        (Node value left new_tree, b)
     where
         _handle (Node v Nil Nil) = (Nil, True)
         _handle (Node v Nil right) = (right, True)
         _handle (Node v left Nil) = (left, True)
-        _handle subroot = let (succ_val, new_tree) = _succ (right subroot)-- 使用直接后继
-            in (Node succ_val (left subroot) new_tree, True)
+        _handle (Node v left right) = let (succ_val, new_tree) = _succ right-- 使用直接后继
+            in (Node succ_val left new_tree, True)
         
         _succ (Node v Nil right) = (v, right)
         _succ (Node v ll rr) = let (res_v, new_tree)=_succ ll in (res_v, Node v new_tree rr)
