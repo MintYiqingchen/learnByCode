@@ -1,41 +1,8 @@
-#include <sys/socket.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <netinet/ip.h>
-#include <arpa/inet.h>
+#include "net_utils.h"
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
-int Socket(int domain, int sockettype, int protocol){
-    int fd;
-    if((fd=socket(domain, sockettype, protocol)) < 0){
-        perror("socket");
-        exit(-1);
-    }
-    return fd;
-}
 
-void Inet_aton(char* ip_str, in_addr* addr){
-    if(inet_aton(ip_str, addr) == 0){
-        perror("inet_aton");
-        exit(-1);
-    }
-}
-
-void Bind(int fd, const sockaddr* addr, socklen_t len){
-    if(bind(fd, addr, len) < 0){
-        perror("bind");
-        exit(-1);
-    }
-}
-
-void Connect(int fd, sockaddr* addr, socklen_t size){
-    if(connect(fd, addr, size) < 0){
-        perror("connect");
-        exit(-1);
-    }
-}
 int main(int argc, char** argv){
     if(argc < 3){
         printf("usage: ./timestampTcpClient server_ip name\n");
@@ -59,8 +26,9 @@ int main(int argc, char** argv){
         exit(EXIT_FAILURE);
     }
     
-    char recvbuf[1024];
-    if((size = recv(sockfd, recvbuf, 1024, 0)) <= 0){
+    char recvbuf[2048];
+    bzero(recvbuf, 2048);
+    if((size = recv(sockfd, recvbuf, 2048, 0)) <= 0){
         perror("recv");
         close(sockfd);
         exit(EXIT_FAILURE);

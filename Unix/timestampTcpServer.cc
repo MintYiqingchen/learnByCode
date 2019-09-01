@@ -1,41 +1,8 @@
-#include <sys/socket.h>
-#include <stdio.h>
+#include "net_utils.h"
 #include <stdlib.h>
-
-#include <netinet/ip.h>
-#include <arpa/inet.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
-int Socket(int domain, int sockettype, int protocol){
-    int fd;
-    if((fd=socket(domain, sockettype, protocol)) < 0){
-        perror("socket");
-        exit(-1);
-    }
-    return fd;
-}
 
-void Inet_aton(char* ip_str, in_addr* addr){
-    if(inet_aton(ip_str, addr) == 0){
-        perror("inet_aton");
-        exit(-1);
-    }
-}
-
-void Bind(int fd, const sockaddr* addr, socklen_t len){
-    if(bind(fd, addr, len) < 0){
-        perror("bind");
-        exit(-1);
-    }
-}
-
-void Listen(int fd, int backlog){
-    if(listen(fd, backlog) < -1){
-        perror("listen");
-        exit(-1);
-    }
-}
 
 size_t get_current_time(char* buf, size_t size){
     time_t t = time(NULL);
@@ -46,13 +13,13 @@ size_t get_current_time(char* buf, size_t size){
         return 0;
     }
 
-    
     if ((size=strftime(buf, size, "%F %T", tmp)) == 0) {
         perror("strftime");
         return 0;
     }
     return size;
 }
+
 int main(int argc, char** argv){
     if(argc < 2){
         printf("usage: ./timestampTcpServer 0.0.0.0\n");
@@ -75,23 +42,29 @@ int main(int argc, char** argv){
             perror("accept");
             continue;
         }
-        
-        char name[256];
-        bzero(name, 256);
-        if((size=recv(peerfd, name, 256, 0)) < 0){
-            perror("recv");
-            close(peerfd);
-            continue;
-        }
-        char msgdata[1024];
-        bzero(msgdata, 1024);
-        snprintf(msgdata, 1024, "hello, %s, now time is ", name);
-        get_current_time(msgdata + strlen(msgdata), 1024 - strlen(msgdata));
-        
-        if((size = send(peerfd, msgdata, strlen(msgdata), 0)) < 0){
-            perror("send");
-        }
-        close(peerfd);
+        int pid ;
+        if((pid = fork()) == 0){
+            close(sockfd);
 
+            char name[256];
+            bzero(name, 256);
+            if((size=recv(peerfd, name, 256, 0)) < 0){
+                perror("recv");
+                close(peerfd);
+                continue;
+            }
+            char msgdata[2048];
+            bzero(msgdata, 2048);
+            snprintf(msgdata, 2048, "Process %d: hello, %s, now time is ", (int)getpid(), name);
+            get_current_time(msgdata + strlen(msgdata), 2048 - strlen(msgdata));
+            
+            if((size = send(peerfd, msgdata, strlen(msgdata), 0)) < 0){
+                perror("send");
+            }
+            close(peerfd);
+            return 0;
+        }
+        
+        close(peerfd);
     }
 }
