@@ -1,4 +1,7 @@
 *.exe
 *.out
+*.a
+*.o
 db.sqlite3
 .vscode/
+__pycache__
